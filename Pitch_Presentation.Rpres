@@ -1,0 +1,77 @@
+A Comparison over time of the ROI of top 4 Companies
+========================================================
+author: Marcelo Angelo Pita
+date: 17/08/2017
+autosize: true
+
+```{r, echo=F, warning=F, message=F}
+library(dplyr)
+library(reshape2)
+library(quantmod)
+library(ggplot2)
+```
+
+Overview
+========================================================
+
+A Web page was developed using **Shiny** to build an interactive way to compare the Return Over Investment (ROI) of the top 4 companies at the S&P500 index. The companies are:
+
+- *Apple*
+- *Microsoft*
+- *Facebook*
+- *Amazon*
+
+You can choose the starting and ending date, and the return of each of the companies will be calculate. The chart of this evolution will be plotted at the page.
+
+How it was done
+========================================================
+
+It was used the **quantmod** package for downloading the stock price information.
+
+
+```{r, message=F, results="hide"}
+start <- as.Date("2017-01-01")
+end <- Sys.Date()
+companies <- c("AAPL", "MSFT", "FB", "AMZN")
+getSymbols(companies, src = "yahoo", from = start, to = end)
+```
+```{r}
+str(as.data.frame(AAPL))
+```
+
+
+Example Chart
+========================================================
+
+From the received data, some transformations are made to give the return with the base value been the one on starting date.
+As example, here is the plot of the ROI of each company this year until today:
+
+```{r, echo=F, warning=F, message=F, include=F, results="hide"}
+index <- index(get(companies[1]))
+df1 <- as.data.frame(get(companies[1]))
+df2 <- as.data.frame(get(companies[2]))
+df3 <- as.data.frame(get(companies[3]))
+df4 <- as.data.frame(get(companies[4]))
+df <- data.frame(Date = index) %>% mutate(Apple = df1$AAPL.Open / df1[1, 1] - 1,
+                                                  Microsoft = df2$MSFT.Open / df2[1, 1] - 1,
+                                                  Facebook = df3$FB.Open / df3[1, 1] - 1,
+                                                  Amazon = df4$AMZN.Open / df4[1, 1] - 1) %>% as.data.frame()
+meltdf <- melt(df, id = "Date")
+colnames(meltdf) <- c("Date", "Company", "Return")
+```
+
+```{r, echo=F, fig.width=8, fig.height=4.5, dpi=300, out.width="1620px", out.height="430px"}
+ggplot(meltdf, aes(Date, Return, colour = Company, group = Company)) + geom_line() +
+            scale_y_continuous(labels = scales::percent) +
+            ggtitle("Return from top market value companies")
+```
+
+
+
+
+Try it!
+========================================================
+
+Go to the web page and try it yourself!
+
+https://marceloangelopita.shinyapps.io/dataproductfinalproject/ 
