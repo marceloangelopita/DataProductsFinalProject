@@ -12,11 +12,11 @@ shinyServer(function(input, output) {
         start <- input$startDate
         end <- input$endDate
         
-        companies_in <- c(input$aapl_cb, input$msft_cb, input$fb_cb, input$amzn_cb)
+        validate(
+            need(start < end, "Please, select the start date to be before the end date.")
+        )
         
         companies <- c("AAPL", "MSFT", "FB", "AMZN")
-        
-        companies2 <- companies[companies_in]
         
         getSymbols(companies, src = "yahoo", from = start, to = end)
         
@@ -36,7 +36,7 @@ shinyServer(function(input, output) {
         colnames(meltdf) <- c("Date", "Company", "Return")
         
         ggplot(meltdf, aes(Date, Return, colour = Company, group = Company)) + geom_line() + 
-            scale_y_continuous(labels = percent) +
+            scale_y_continuous(labels = scales::percent) +
             ggtitle("Return from top market value companies")
         
     })
